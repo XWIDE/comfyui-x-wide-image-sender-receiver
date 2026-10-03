@@ -1,6 +1,6 @@
-# X-WIDE Image / Latent Sender & Receiver
+﻿# X-WIDE Image / Latent Sender & Receiver
 
-**English** | [中文](README.md)
+**English** | [中文](https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver/blob/main/README.md)
 
 Send things from one place on the canvas to another — four nodes:
 
@@ -11,7 +11,7 @@ This package is an independent repackaging of the `Image Sender` / `Image Receiv
 
 > It **only improves the UI (bilingual) and fixes bugs — no new features**, and it does **not** require Impact Pack to be installed.
 
-Current version: **1.1.0** (adds the latent pair) — see [CHANGELOG.md](CHANGELOG.md).
+Current version: **1.1.0** (adds the latent pair) — see [CHANGELOG.md](https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver/blob/main/CHANGELOG.md).
 
 The transfer protocol is identical to the original (`img-send` / `latent-send` events, `name.png [temp]` widget format), so it can be mixed with Impact Pack's sender/receiver nodes, and existing workflows can be migrated the same way.
 
@@ -28,7 +28,7 @@ The transfer protocol is identical to the original (`img-send` / `latent-send` e
 | 5 | **A missing latent file (temp cleared by a restart) turned the node red** | The original `LatentReceiver` rejected non-existent files in `VALIDATE_INPUTS` | Only absolute paths and `..` are rejected; a missing file logs a warning and falls back to an empty latent (`1×4×8×8`) |
 | 6 | **The original `LatentReceiver` returned a bare tensor when its input was missing** | It returned `torch.zeros([1,4,8,8])` instead of `{"samples": …}`, so downstream got the wrong type | Always returns a valid `LATENT` |
 
-![The error before the fix](docs/images/draft-save-error.png)
+![The error before the fix](https://raw.githubusercontent.com/XWIDE/comfyui-x-wide-image-sender-receiver/main/docs/images/draft-save-error.png)
 
 ---
 
@@ -126,9 +126,9 @@ Node display names are `X-WIDE Image Sender 图像发送器`, `X-WIDE Image Rece
 
 ## License and credits
 
-- Licensed under **GPL-3.0**, see [LICENSE](LICENSE);
+- Licensed under **GPL-3.0**, see [LICENSE](https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver/blob/main/LICENSE);
 - The original `Image Sender` / `Image Receiver` / `Latent Sender` / `Latent Receiver` nodes were created by **ltdrdata (Dr.Lt.Data)** in ComfyUI-Impact-Pack; copyright belongs to the original author;
-- The modifications in this version are copyright **X-WIDE**. See [NOTICE](NOTICE) and [CHANGELOG.md](CHANGELOG.md) for the change list and the GPL-3.0 obligations.
+- The modifications in this version are copyright **X-WIDE**. See [NOTICE](https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver/blob/main/NOTICE) and [CHANGELOG.md](https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver/blob/main/CHANGELOG.md) for the change list and the GPL-3.0 obligations.
 
 Original author: <https://github.com/ltdrdata> · Original project: <https://github.com/ltdrdata/ComfyUI-Impact-Pack>
 

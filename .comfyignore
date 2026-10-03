@@ -1,0 +1,4 @@
+# 这些只在 GitHub 上有用，不打进 ComfyUI Registry 的插件包
+.github/
+docs/
+__pycache__/
