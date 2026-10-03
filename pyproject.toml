@@ -1,13 +1,13 @@
 [project]
 name = "x-wide-image-sender-receiver"
-version = "1.0.0"
-description = "X-WIDE Image Sender / Image Receiver —— 独立的图像收发节点（中英双语界面，修复预览恢复与草稿配额问题）"
+version = "1.1.0"
+description = "X-WIDE Image / Latent Sender & Receiver —— 独立的图像与潜空间收发节点（中英双语界面，修复预览恢复、草稿配额与缺失文件报错）"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 dependencies = []
 authors = [{ name = "X-WIDE" }]
 readme = "README.md"
-keywords = ["comfyui", "image", "sender", "receiver", "x-wide"]
+keywords = ["comfyui", "image", "latent", "sender", "receiver", "x-wide"]
 
 [project.urls]
 Repository = "https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver"
@@ -16,6 +16,6 @@ Documentation = "https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver#r
 
 [tool.comfy]
 PublisherId = "xwide"
-DisplayName = "X-WIDE Image Sender / Receiver"
+DisplayName = "X-WIDE Image / Latent Sender / Receiver"
 Icon = "https://raw.githubusercontent.com/XWIDE/comfyui-x-wide-image-sender-receiver/main/web/logo_xwide_icon.png"
 includes = []

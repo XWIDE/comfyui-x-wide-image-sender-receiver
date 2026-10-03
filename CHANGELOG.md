@@ -1,5 +1,47 @@
 # 更新日志 / Changelog
 
+## 1.1.0 — 2026-10-04
+
+新增潜空间（LATENT）那一对节点，功能对齐 ComfyUI-Impact-Pack 原版：
+`X-WIDE Latent Sender 潜空间发送器` / `X-WIDE Latent Receiver 潜空间接收器`。
+仍然是**等价实现 + 只修 BUG、不新增原版没有的能力**，依旧不依赖 Impact Pack。
+
+### 新增
+
+- **X-WIDE Latent Sender**（`XWIDE_LatentSender`，输出节点）
+  - 控件：`samples` / `filename_prefix`（默认 `latents/LatentSender`）/ `link_id` / `preview_method`。
+  - 文件名、事件名与元数据写法与原版一致：写到 ComfyUI 的 `temp` 目录，发 `latent-send` 事件
+    （`{"link_id": …, "images": [{"filename", "subfolder", "type"}]}`）。
+  - 正常写 `<前缀>_<序号>_.latent.png`：Latent2RGB 预览图 + 把 latent 打包塞进 PNG 的
+    EXIF `UserComment`（zip + safetensors），接收端可原样读回。预览图不再贴 Impact Pack 自带的
+    「latent」贴纸（那是原项目的图片资源，本包不打包它）。
+  - `preview_method` 选项与原版逐项一致：Latent2RGB-FLUX.1 / SDXL / SD15 / SD3 / SD-X4 /
+    Playground-2.5 / SC-Prior / SC-B / LTXV / TAEF1 / TAESDXL / TAESD15 / TAESD3；
+    未知取值退回 SD15 并告警。
+- **X-WIDE Latent Receiver**（`XWIDE_LatentReceiver`，输出 `LATENT`）
+  - 控件：`latent`（自动列出输入目录里的 `.latent` / `.latent.png`）/ `link_id` / `trigger_always`。
+  - `doit` 返回 `{"ui": {"images": [...]}, "result": (latent,)}`，与原版一致。
+- 前端新增 `latent-send` 监听：把收到的文件名写进 `latent` 控件，并在节点上显示预览
+  （纯 `.latent` 没有预览图，只刷新控件）。X-WIDE 与 Impact Pack 混装时，两边各写各的节点类型。
+
+### 修复（相对原版）
+
+- **文件不存在不再报红**：原版在 `VALIDATE_INPUTS` 里直接拒绝，ComfyUI 重启（`temp` 被清空）
+  后老工作流整片变红。现在只拒绝绝对路径与 `..`，文件缺失改为 `logging.warning` +
+  回退空 latent（`1×4×8×8`）。
+- 原版 `doit` 在拿不到 `latent` 参数时返回裸张量 `torch.zeros([1,4,8,8])` 而不是
+  `{"samples": …}`，下游会收到错误类型；本包统一返回合法的 `LATENT`。
+- 读 `.latent` 时按 ComfyUI 的约定处理缩放：没有 `latent_format_version_0` 标记的老文件
+  乘 `1/0.18215`，本包自己写出的文件一定带标记，避免被重复缩放。
+
+### 兼容性
+
+- 沿用原版协议（`latent-send` 事件、`名称 [temp]` 的控件写法），可与 Impact Pack 的
+  `LatentSender` / `LatentReceiver` 互相配对。
+- 只用到 ComfyUI 环境里本就存在的可选库 `piexif` 与 `safetensors`；缺失时不报错，
+  退化为写/读纯 `.latent` 文件，收发依旧可用，只是接收节点上没有缩略图。
+- 版本号统一：`__init__.py` / `web/xwide_image.js` / `CHANGELOG.md` 均为 `1.1.0`。
+
 ## 1.0.0 — 2026-10-04
 
 首个发布版本：把 ComfyUI-Impact-Pack（原作者 **ltdrdata**）里的

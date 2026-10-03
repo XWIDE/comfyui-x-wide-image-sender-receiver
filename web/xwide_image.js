@@ -1,11 +1,12 @@
 /**
- * X-WIDE Image Sender / Image Receiver —— 前端扩展
- * ================================================
+ * X-WIDE Image Sender / Receiver + X-WIDE Latent Sender / Receiver —— 前端扩展
+ * =========================================================================
  *
- * 原节点 Image Sender / Image Receiver 由 ltdrdata (Dr.Lt.Data) 在
- * ComfyUI-Impact-Pack 中开发（GPL-3.0）。本文件是 X-WIDE 独立版本的前端部分：
- * 收发协议（`img-send` 事件、`name.png [temp]` 的控件写法）与原版一致，
- * 因此两个包可以共存、互相配对；改动只有界面双语化 + 三个 BUG 修复。
+ * 原节点 Image Sender / Image Receiver / Latent Sender / Latent Receiver 由
+ * ltdrdata (Dr.Lt.Data) 在 ComfyUI-Impact-Pack 中开发（GPL-3.0）。本文件是
+ * X-WIDE 独立版本的前端部分：收发协议（`img-send` / `latent-send` 事件、
+ * `name.png [temp]` 的控件写法）与原版一致，因此两个包可以共存、互相配对；
+ * 改动只有界面双语化 + BUG 修复。
  *
  * 三个修复各自的关键点（都尽量少做事，避免又引入性能问题）：
  *
@@ -33,11 +34,16 @@ import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
 
 const EXTENSION_NAME = "xwide.image_sender_receiver";
-const LOG_PREFIX = "[X-WIDE Image Sender/Receiver]";
-const VERSION = "1.0.0";
+const LOG_PREFIX = "[X-WIDE Image/Latent Sender/Receiver]";
+const VERSION = "1.1.0";
 
 const SENDER_CLASS = "XWIDE_ImageSender";
 const RECEIVER_CLASS = "XWIDE_ImageReceiver";
+const LATENT_SENDER_CLASS = "XWIDE_LatentSender";
+const LATENT_RECEIVER_CLASS = "XWIDE_LatentReceiver";
+
+/** 本扩展要接管的节点类型（双语控件名 + 预览恢复） */
+const MANAGED_CLASSES = [SENDER_CLASS, RECEIVER_CLASS, LATENT_SENDER_CLASS, LATENT_RECEIVER_CLASS];
 
 const AUTHOR_NAME = "X-WIDE";
 const AUTHOR_PAGE_URL = "https://space.bilibili.com/374064919";
@@ -72,6 +78,16 @@ const WIDGET_LABELS = {
     link_id: "联动 ID / link_id",
     save_to_workflow: "保存到工作流 / save_to_workflow",
     image_data: "图像数据 / image_data",
+    trigger_always: "总是触发 / trigger_always",
+  },
+  [LATENT_SENDER_CLASS]: {
+    filename_prefix: "文件名前缀 / filename_prefix",
+    link_id: "联动 ID / link_id",
+    preview_method: "预览方式 / preview_method",
+  },
+  [LATENT_RECEIVER_CLASS]: {
+    latent: "潜空间 / latent",
+    link_id: "联动 ID / link_id",
     trigger_always: "总是触发 / trigger_always",
   },
 };
@@ -190,14 +206,15 @@ function applyImages(node, images, { resize = false } = {}) {
 }
 
 /**
- * 从 image 控件里记录的路径恢复预览。
+ * 从路径控件（Image Receiver 的 `image`，Latent Receiver 的 `latent`）里记录的
+ * 路径恢复预览。
  * **只做一次**：`node.imgs` 的 getter 每次重绘都会被调用，如果每次都发请求、
  * 每次都重建 Image，画布就会卡死（这正是 v1 补丁的毛病）。
  */
-function restorePreviewOnce(node, state) {
+function restorePreviewOnce(node, state, pathWidgetName = "image") {
   if (state.restoreAttempted) return;
 
-  const parsed = parseImageValue(findWidget(node, "image")?.value);
+  const parsed = parseImageValue(findWidget(node, pathWidgetName)?.value);
   if (!parsed) return; // 还没有收到过图，保持可重试
 
   state.restoreAttempted = true;
@@ -238,7 +255,6 @@ function patchReceiverWidgets(node) {
   const state = receiverState(node);
   const imageDataWidget = findWidget(node, "image_data");
   const saveWidget = findWidget(node, "save_to_workflow");
-  const pathWidget = findWidget(node, "image");
 
   // 旧草稿（由未修复版本存下的）里 image_data 可能真的是 base64，读出来当回退源。
   const initial = typeof imageDataWidget?.value === "string" ? imageDataWidget.value : "";
@@ -297,6 +313,17 @@ function patchReceiverWidgets(node) {
     };
   }
 
+  patchPreviewCache(node, "image");
+}
+
+/**
+ * 接收节点共用的预览机制：路径控件被改动时清掉旧预览；`node.imgs` 的 getter
+ * 只在第一次被调用时去恢复预览，之后纯读缓存（重绘路径上不做重活）。
+ */
+function patchPreviewCache(node, pathWidgetName) {
+  const state = receiverState(node);
+  const pathWidget = findWidget(node, pathWidgetName);
+
   // 收到的临时文件不在下拉列表里，补进去让控件显示得正常些（只影响外观）。
   if (pathWidget && !pathWidget.__xwidePatched) {
     pathWidget.__xwidePatched = true;
@@ -317,7 +344,7 @@ function patchReceiverWidgets(node) {
       configurable: true,
       enumerable: true,
       get() {
-        if (!state.imgs.length) restorePreviewOnce(node, state);
+        if (!state.imgs.length) restorePreviewOnce(node, state, pathWidgetName);
         return state.imgs;
       },
       set(value) {
@@ -375,6 +402,62 @@ function imgSendHandler(event) {
 }
 
 /* ------------------------------------------------------------------ *
+ *  收发：latent-send
+ * ------------------------------------------------------------------ */
+
+/**
+ * Latent Sender 发来的文件要么是 `.latent.png`（预览图 + EXIF 里内嵌的 latent），
+ * 要么是 `.latent`（纯文件，没有预览可显示）。
+ */
+function latentSendHandler(event) {
+  const detail = event?.detail || {};
+  const files = Array.isArray(detail.images) ? detail.images : [];
+  const first = files[0];
+
+  if (!first?.filename) return;
+
+  const nodes = app?.graph?._nodes || [];
+  for (const node of nodes) {
+    if (node?.type !== LATENT_RECEIVER_CLASS) continue;
+
+    if (!receiverLinkMatches(node, detail.link_id)) continue;
+
+    const pathWidget = findWidget(node, "latent");
+    if (!pathWidget) continue;
+
+    const subfolder = first.subfolder || "";
+    const value = `${subfolder ? `${subfolder}/` : ""}${first.filename} [${first.type}]`;
+
+    const values = pathWidget.options?.values;
+    if (Array.isArray(values) && !values.includes(value)) values.push(value);
+    pathWidget.value = value;
+
+    const state = receiverState(node);
+    state.restoreAttempted = true; // 已经拿到新文件，不需要走恢复流程
+    state.imgs.length = 0;
+
+    if (String(first.filename).toLowerCase().endsWith(".png")) {
+      const image = new Image();
+      image.onload = () => setReceivedImage(node, image);
+      image.onerror = () => logWarn(`failed to load the received latent preview: ${value}`);
+      image.src = viewUrl(viewParams(first.filename, first.type, subfolder));
+    } else {
+      try {
+        node.setDirtyCanvas?.(true, true);
+      } catch (error) {
+        /* ignore */
+      }
+    }
+  }
+
+  try {
+    app.canvas?.setDirty(true);
+  } catch (error) {
+    /* ignore */
+  }
+}
+
+/* ------------------------------------------------------------------ *
  *  「信息 / About」窗口
  * ------------------------------------------------------------------ */
 
@@ -419,8 +502,8 @@ function buildAboutBody() {
   return `
   <p class="xwide-card-desc" style="margin:0;">
     ${tr(
-      `本版本把原作者 ltdrdata 的 Image Sender / Image Receiver <b>独立重写</b>为 X-WIDE 版：<b>只优化界面显示、修复 BUG，没有新增功能</b>，也不需要安装 Impact Pack。`,
-      `This version is an independent X-WIDE rewrite of the original Image Sender / Image Receiver by ltdrdata: it <b>only improves the UI and fixes bugs</b> — no new features, and no Impact Pack installation required.`
+      `本版本把原作者 ltdrdata 的四个节点（Image Sender / Image Receiver / Latent Sender / Latent Receiver）<b>独立重写</b>为 X-WIDE 版：<b>只优化界面显示、修复 BUG，没有新增原版没有的功能</b>，也不需要安装 Impact Pack。`,
+      `This version is an independent X-WIDE rewrite of the four original nodes by ltdrdata (Image Sender / Image Receiver / Latent Sender / Latent Receiver): it <b>only improves the UI and fixes bugs</b> — no features beyond the originals — and no Impact Pack installation required.`
     )}
   </p>
 
@@ -435,8 +518,8 @@ function buildAboutBody() {
       </div>
       <p class="xwide-card-desc">
         ${tr(
-          "独立封装 + 中英双语界面 + 修复原节点的三个问题（切换工作流后预览失效、保存到工作流撑爆草稿配额、大图卡顿）。遵循 GPL-3.0 继续开源。",
-          "Independent packaging, bilingual UI, and fixes for three issues of the original nodes (preview lost after switching workflows, draft quota blown by save-to-workflow, lag with large images). Kept open source under GPL-3.0."
+          "独立封装 + 中英双语界面 + 修复原节点的问题（切换工作流后预览失效、保存到工作流撑爆草稿配额、大图卡顿、文件被清空后节点报红），图像与潜空间各一对节点，协议与原版一致。遵循 GPL-3.0 继续开源。",
+          "Independent packaging, bilingual UI, and fixes for the original nodes' issues (preview lost after switching workflows, draft quota blown by save-to-workflow, lag with large images, red nodes after the temp files are cleared), with one pair of nodes for images and one for latents, on the same protocol as the originals. Kept open source under GPL-3.0."
         )}
       </p>
       <div class="xwide-links">
@@ -456,8 +539,8 @@ function buildAboutBody() {
       </div>
       <p class="xwide-card-desc">
         ${tr(
-          "原节点 Image Sender / Image Receiver 由 ltdrdata（Dr.Lt.Data）在 ComfyUI-Impact-Pack 中开发，版权归原作者所有。本项目的收发协议与之一致（img-send 事件），两个包的节点可以混用。",
-          "The original Image Sender / Image Receiver nodes were created by ltdrdata (Dr.Lt.Data) in ComfyUI-Impact-Pack; copyright belongs to the original author. This project keeps the same protocol (the img-send event), so nodes from both packs can be mixed."
+          "原节点 Image Sender / Image Receiver / Latent Sender / Latent Receiver 由 ltdrdata（Dr.Lt.Data）在 ComfyUI-Impact-Pack 中开发，版权归原作者所有。本项目的收发协议与之一致（img-send 与 latent-send 事件），两个包的节点可以混用。",
+          "The original Image Sender / Image Receiver / Latent Sender / Latent Receiver nodes were created by ltdrdata (Dr.Lt.Data) in ComfyUI-Impact-Pack; copyright belongs to the original author. This project keeps the same protocol (the img-send and latent-send events), so nodes from both packs can be mixed."
         )}
       </p>
       <div class="xwide-links">
@@ -479,18 +562,26 @@ function buildAboutBody() {
       "Fix: “save_to_workflow” no longer inlines megabytes of base64 into the workflow draft — no more “failed to save draft” errors, and no more canvas lag caused by it."
     )}</li>
     <li>${tr(
-      "界面：控件名与提示中英双语，节点归入 X-WIDE 分类，搜索支持 xwide / sender / receiver / 图像发送 / 图像接收 等别名。",
-      "UI: bilingual widget labels and tooltips, an X-WIDE category, and search aliases such as xwide / sender / receiver."
+      "新增（v1.1.0）：Latent Sender / Latent Receiver —— 与图像那一对用法相同，但传的是 LATENT 潜空间张量，省掉一次「解码成图再编码回 latent」。",
+      "New in v1.1.0: Latent Sender / Latent Receiver — used exactly like the image pair, but they pass the LATENT tensor itself, saving a decode-then-re-encode round trip."
     )}</li>
     <li>${tr(
-      "兼容：沿用原版的 img-send 协议，可与 Impact Pack 的收发节点互相配对。",
-      "Compatible: reuses the original img-send protocol, so it can pair with Impact Pack's sender/receiver nodes."
+      "界面：控件名与提示中英双语，节点归入 X-WIDE 分类，搜索支持 xwide / sender / receiver / 图像发送 / 图像接收 / 潜空间发送 / 潜空间接收 等别名。",
+      "UI: bilingual widget labels and tooltips, an X-WIDE category, and search aliases such as xwide / sender / receiver / latent sender / latent receiver."
+    )}</li>
+    <li>${tr(
+      "兼容：沿用原版的 img-send 与 latent-send 协议，可与 Impact Pack 的收发节点互相配对。",
+      "Compatible: reuses the original img-send and latent-send protocols, so it can pair with Impact Pack's sender/receiver nodes."
     )}</li>
   </ul>
   <p class="xwide-note">
     ${tr(
-      "注意：收到的图存放在临时目录，ComfyUI 重启后 temp 会被清空，需要重新发送一次。",
-      "Note: received images live in the temp folder. Restarting ComfyUI clears it, so send the image again after a restart."
+      "注意：收到的图 / latent 都存放在临时目录，ComfyUI 重启后 temp 会被清空，需要重新发送一次。",
+      "Note: received images and latents live in the temp folder. Restarting ComfyUI clears it, so send them again after a restart."
+    )}
+    ${tr(
+      "潜空间的预览图靠 piexif 写入 EXIF；环境里没有 piexif 时会自动改成写纯 .latent 文件，收发照常可用，只是接收节点上没有缩略图。",
+      "Latent previews embed the tensor in the PNG's EXIF through piexif; without piexif the sender writes a plain .latent file instead — sending and receiving still work, the receiver just has no thumbnail."
     )}
   </p>
 
@@ -615,13 +706,16 @@ app.registerExtension({
   name: EXTENSION_NAME,
 
   async setup() {
+    // 两个事件分别对应图像与潜空间。X-WIDE 与 Impact Pack 都监听同样的名字，
+    // 而各自的处理器只认自己那套节点类型，所以两个包混装也不会互相干扰。
     api.addEventListener("img-send", imgSendHandler);
+    api.addEventListener("latent-send", latentSendHandler);
     patchCanvasMenu();
   },
 
   async beforeRegisterNodeDef(nodeType, nodeData) {
     const className = nodeData?.name;
-    if (className !== SENDER_CLASS && className !== RECEIVER_CLASS) return;
+    if (!MANAGED_CLASSES.includes(className)) return;
 
     // 双语控件名（前端渲染时读 widget.label || widget.name）
     const labels = WIDGET_LABELS[className] || {};
@@ -634,6 +728,7 @@ app.registerExtension({
           if (label) widget.label = label;
         }
         if (className === RECEIVER_CLASS) patchReceiverWidgets(this);
+        else if (className === LATENT_RECEIVER_CLASS) patchPreviewCache(this, "latent");
       } catch (error) {
         logWarn("node setup failed", error);
       }

@@ -1,5 +1,5 @@
-X-WIDE Image Sender / Receiver — 版权与来源说明
-===============================================
+X-WIDE Image / Latent Sender & Receiver — 版权与来源说明
+======================================================
 
 本插件是以下开源项目的修改版本（独立封装，不依赖原项目运行）：
 
@@ -8,13 +8,13 @@ X-WIDE Image Sender / Receiver — 版权与来源说明
     原仓库：https://github.com/ltdrdata/ComfyUI-Impact-Pack
     原作者主页：https://github.com/ltdrdata
     原许可：GNU General Public License v3.0 (GPL-3.0)
-    涉及的节点：Image Sender / Image Receiver
+    涉及的节点：Image Sender / Image Receiver / Latent Sender / Latent Receiver
     原文件位置：modules/impact/impact_pack.py
     官方教程：https://github.com/ltdrdata/ComfyUI-extension-tutorials/blob/Main/ComfyUI-Impact-Pack/tutorial/sender_receiver.md
 
 本版本：
 
-    名称：X-WIDE Image Sender / Receiver
+    名称：X-WIDE Image / Latent Sender & Receiver
     包名：comfyui-x-wide-image-sender-receiver
     作者：X-WIDE
     仓库：https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver
@@ -26,8 +26,9 @@ X-WIDE Image Sender / Receiver — 版权与来源说明
   2. 在此声明本版本经过了修改，修改内容详见 CHANGELOG.md；
   3. 保留原作者的版权声明。
 
-主要修改内容（1.0.0）：
+主要修改内容：
 
+  1.0.0：
   - 独立封装：自实现收发与图像解码，不再依赖 Impact Pack（节点类型名改为
     XWIDE_ImageSender / XWIDE_ImageReceiver，收发协议仍与原版一致）；
   - 修复：切换工作流后收到的图失效（前端预览从未真正指向 /view 地址）；
@@ -36,6 +37,15 @@ X-WIDE Image Sender / Receiver — 版权与来源说明
   - 修复：图片文件不存在时节点直接抛异常（现改为警告 + 64×64 占位图）；
   - 界面：控件名 / 提示 / 节点说明中英双语，新增「信息 / About」署名页，
     节点分类为 `X-WIDE/Image`，并补充搜索别名。
+
+  1.1.0：
+  - 新增：潜空间那一对节点 XWIDE_LatentSender / XWIDE_LatentReceiver，等价实现原版的
+    Latent Sender / Latent Receiver（同样支持 .latent 与带 EXIF 预览的 .latent.png，
+    事件名 latent-send，控件写法与原版一致）；
+  - 修复：latent 文件不存在时原版会在 VALIDATE_INPUTS 直接拒绝、重启后老工作流报红，
+    现改为警告 + 回退空 latent（1×4×8×8）；
+  - 修复：原版 LatentReceiver 拿不到输入时返回裸张量，现统一返回合法的 LATENT；
+  - 界面：新增节点同样中英双语，分类为 `X-WIDE/Latent`，About 页同步更新。
 
 原项目版权归 ltdrdata 所有。
 本修改版本的修改部分版权归 X-WIDE 所有，同样以 GPL-3.0 授权。
