@@ -47,7 +47,7 @@ const MANAGED_CLASSES = [SENDER_CLASS, RECEIVER_CLASS, LATENT_SENDER_CLASS, LATE
 
 const AUTHOR_NAME = "X-WIDE";
 const AUTHOR_PAGE_URL = "https://space.bilibili.com/374064919";
-const REPO_URL = "https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver";
+const REPO_URL = "https://github.com/XWIDE/comfyui-x-wide-image-latent-sender-receiver";
 
 const ORIGINAL_AUTHOR_NAME = "ltdrdata (Dr.Lt.Data)";
 const ORIGINAL_AUTHOR_URL = "https://github.com/ltdrdata";

@@ -10,12 +10,12 @@ readme = "README.md"
 keywords = ["comfyui", "image", "latent", "sender", "receiver", "x-wide"]
 
 [project.urls]
-Repository = "https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver"
-"Bug Tracker" = "https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver/issues"
-Documentation = "https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver#readme"
+Repository = "https://github.com/XWIDE/comfyui-x-wide-image-latent-sender-receiver"
+"Bug Tracker" = "https://github.com/XWIDE/comfyui-x-wide-image-latent-sender-receiver/issues"
+Documentation = "https://github.com/XWIDE/comfyui-x-wide-image-latent-sender-receiver#readme"
 
 [tool.comfy]
 PublisherId = "xwide"
 DisplayName = "X-WIDE Image Latent Sender / Receiver"
-Icon = "https://raw.githubusercontent.com/XWIDE/comfyui-x-wide-image-sender-receiver/main/web/logo_xwide_icon.png"
+Icon = "https://raw.githubusercontent.com/XWIDE/comfyui-x-wide-image-latent-sender-receiver/main/web/logo_xwide_icon.png"
 includes = []

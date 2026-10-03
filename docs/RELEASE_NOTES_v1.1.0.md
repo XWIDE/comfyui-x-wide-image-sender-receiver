@@ -1,7 +1,7 @@
 # v1.1.0 — 新增潜空间收发 / Latent Sender & Receiver
 
 > 这份文件是 GitHub Release 的现成文案：在
-> <https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver/releases/new>
+> <https://github.com/XWIDE/comfyui-x-wide-image-latent-sender-receiver/releases/new>
 > 里选好标签 `v1.1.0`，把下面横线以内的内容整段粘进正文即可。
 
 ---

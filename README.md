@@ -1,6 +1,6 @@
 # X-WIDE Image Latent Sender / Receiver
 
-[English](https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver/blob/main/README.en.md) | **中文**
+[English](https://github.com/XWIDE/comfyui-x-wide-image-latent-sender-receiver/blob/main/README.en.md) | **中文**
 
 把画布上一处的东西「发」给另一处，四颗节点：
 
@@ -11,7 +11,7 @@
 
 > **只优化界面显示（中英双语）并修复原节点的 BUG，没有新增功能**，也**不需要安装 Impact Pack**。
 
-当前版本：**1.1.0**（新增潜空间那一对节点）—— 变更明细见 [CHANGELOG.md](https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver/blob/main/CHANGELOG.md)。
+当前版本：**1.1.0**（新增潜空间那一对节点）—— 变更明细见 [CHANGELOG.md](https://github.com/XWIDE/comfyui-x-wide-image-latent-sender-receiver/blob/main/CHANGELOG.md)。
 
 收发协议与原版完全一致（`img-send` / `latent-send` 事件、`名称.png [temp]` 的控件写法），因此可以和 Impact Pack 的收发节点混用、互相配对，老工作流也能照着替换。
 
@@ -28,7 +28,7 @@
 | 5 | **latent 文件没了（重启后 temp 被清空），节点报红** | 原版 `LatentReceiver` 在 `VALIDATE_INPUTS` 里直接拒绝不存在的文件 | 只拒绝绝对路径与 `..`；文件缺失时告警 + 回退空 latent（`1×4×8×8`），不打断工作流 |
 | 6 | **原版 `LatentReceiver` 拿不到输入时返回裸张量** | 返回 `torch.zeros([1,4,8,8])` 而不是 `{"samples": …}`，下游拿到错误类型 | 统一返回合法的 `LATENT` |
 
-![修复前的报错：保存工作流草稿失败](https://raw.githubusercontent.com/XWIDE/comfyui-x-wide-image-sender-receiver/main/docs/images/draft-save-error.png)
+![修复前的报错：保存工作流草稿失败](https://raw.githubusercontent.com/XWIDE/comfyui-x-wide-image-latent-sender-receiver/main/docs/images/draft-save-error.png)
 
 ---
 
@@ -37,14 +37,14 @@
 **方式一：ComfyUI Manager（推荐）**
 
 1. 打开 Manager → **Install via Git URL**；
-2. 填入仓库地址：`https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver`
+2. 填入仓库地址：`https://github.com/XWIDE/comfyui-x-wide-image-latent-sender-receiver`
 3. 重启 ComfyUI，刷新页面（`Ctrl` + `F5`）。
 
 **方式二：手动**
 
 ```bash
 cd ComfyUI/custom_nodes
-git clone https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver
+git clone https://github.com/XWIDE/comfyui-x-wide-image-latent-sender-receiver
 ```
 
 本包**不需要**额外依赖：只用到 ComfyUI 自带的 `torch` / `numpy` / `Pillow` 与前端 API。
@@ -127,7 +127,7 @@ git clone https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver
 ## 目录结构
 
 ```
-comfyui-x-wide-image-sender-receiver/
+comfyui-x-wide-image-latent-sender-receiver/
 ├── __init__.py              # 注册节点 + WEB_DIRECTORY
 ├── nodes.py                 # 两个节点（Python 侧）
 ├── web/xwide_image.js       # 前端：双语控件名、img-send 接收、预览恢复、About 页、右键菜单
@@ -142,13 +142,13 @@ comfyui-x-wide-image-sender-receiver/
 
 ## 许可与致谢
 
-- 本项目以 **GPL-3.0** 授权，见 [LICENSE](https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver/blob/main/LICENSE)；
+- 本项目以 **GPL-3.0** 授权，见 [LICENSE](https://github.com/XWIDE/comfyui-x-wide-image-latent-sender-receiver/blob/main/LICENSE)；
 - 原节点 `Image Sender` / `Image Receiver` / `Latent Sender` / `Latent Receiver` 由 **ltdrdata (Dr.Lt.Data)** 在 ComfyUI-Impact-Pack 中开发，版权归原作者所有；
-- 本版本的修改部分版权归 **X-WIDE** 所有。修改内容与 GPL-3.0 义务声明见 [NOTICE](https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver/blob/main/NOTICE) 与 [CHANGELOG.md](https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver/blob/main/CHANGELOG.md)。
+- 本版本的修改部分版权归 **X-WIDE** 所有。修改内容与 GPL-3.0 义务声明见 [NOTICE](https://github.com/XWIDE/comfyui-x-wide-image-latent-sender-receiver/blob/main/NOTICE) 与 [CHANGELOG.md](https://github.com/XWIDE/comfyui-x-wide-image-latent-sender-receiver/blob/main/CHANGELOG.md)。
 
 原作者主页：<https://github.com/ltdrdata> · 原项目：<https://github.com/ltdrdata/ComfyUI-Impact-Pack>
 
 ## 交流
 
 - 作者主页：<https://space.bilibili.com/374064919>
-- 问题反馈：<https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver/issues>
+- 问题反馈：<https://github.com/XWIDE/comfyui-x-wide-image-latent-sender-receiver/issues>
