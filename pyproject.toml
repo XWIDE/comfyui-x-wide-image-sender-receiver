@@ -1,5 +1,5 @@
 [project]
-name = "xwide-image-sender-receiver"
+name = "x-wide-image-sender-receiver"
 version = "1.0.0"
 description = "X-WIDE Image Sender / Image Receiver —— 独立的图像收发节点（中英双语界面，修复预览恢复与草稿配额问题）"
 license = { file = "LICENSE" }
@@ -10,12 +10,12 @@ readme = "README.md"
 keywords = ["comfyui", "image", "sender", "receiver", "x-wide"]
 
 [project.urls]
-Repository = "https://github.com/XWIDE/comfyui-xwide-image-sender-receiver"
-"Bug Tracker" = "https://github.com/XWIDE/comfyui-xwide-image-sender-receiver/issues"
-Documentation = "https://github.com/XWIDE/comfyui-xwide-image-sender-receiver#readme"
+Repository = "https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver"
+"Bug Tracker" = "https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver/issues"
+Documentation = "https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver#readme"
 
 [tool.comfy]
 PublisherId = "xwide"
 DisplayName = "X-WIDE Image Sender / Receiver"
-Icon = "https://raw.githubusercontent.com/XWIDE/comfyui-xwide-image-sender-receiver/main/web/logo_xwide_icon.png"
+Icon = "https://raw.githubusercontent.com/XWIDE/comfyui-x-wide-image-sender-receiver/main/web/logo_xwide_icon.png"
 includes = []

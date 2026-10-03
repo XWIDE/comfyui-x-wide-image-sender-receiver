@@ -41,13 +41,13 @@ const RECEIVER_CLASS = "XWIDE_ImageReceiver";
 
 const AUTHOR_NAME = "X-WIDE";
 const AUTHOR_PAGE_URL = "https://space.bilibili.com/374064919";
-const REPO_URL = "https://github.com/XWIDE/comfyui-xwide-image-sender-receiver";
+const REPO_URL = "https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver";
 
 const ORIGINAL_AUTHOR_NAME = "ltdrdata (Dr.Lt.Data)";
 const ORIGINAL_AUTHOR_URL = "https://github.com/ltdrdata";
 const ORIGINAL_PROJECT_URL = "https://github.com/ltdrdata/ComfyUI-Impact-Pack";
 
-/** 扩展自己的资源目录（用于取 logo）：/extensions/comfyui-xwide-image-sender-receiver/ */
+/** 扩展自己的资源目录（用于取 logo）：/extensions/<安装时的文件夹名>/，由 import.meta.url 自动推导 */
 const EXTENSION_DIR = new URL(".", import.meta.url).href;
 
 const IMAGE_DATA_SENTINEL = "[IMAGE DATA]";

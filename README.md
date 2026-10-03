@@ -30,14 +30,14 @@
 **方式一：ComfyUI Manager（推荐）**
 
 1. 打开 Manager → **Install via Git URL**；
-2. 填入仓库地址：`https://github.com/XWIDE/comfyui-xwide-image-sender-receiver`
+2. 填入仓库地址：`https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver`
 3. 重启 ComfyUI，刷新页面（`Ctrl` + `F5`）。
 
 **方式二：手动**
 
 ```bash
 cd ComfyUI/custom_nodes
-git clone https://github.com/XWIDE/comfyui-xwide-image-sender-receiver
+git clone https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver
 ```
 
 本包**不需要**额外依赖：只用到 ComfyUI 自带的 `torch` / `numpy` / `Pillow` 与前端 API。
@@ -97,7 +97,7 @@ git clone https://github.com/XWIDE/comfyui-xwide-image-sender-receiver
 ## 目录结构
 
 ```
-comfyui-xwide-image-sender-receiver/
+comfyui-x-wide-image-sender-receiver/
 ├── __init__.py              # 注册节点 + WEB_DIRECTORY
 ├── nodes.py                 # 两个节点（Python 侧）
 ├── web/xwide_image.js       # 前端：双语控件名、img-send 接收、预览恢复、About 页、右键菜单
@@ -121,4 +121,4 @@ comfyui-xwide-image-sender-receiver/
 ## 交流
 
 - 作者主页：<https://space.bilibili.com/374064919>
-- 问题反馈：<https://github.com/XWIDE/comfyui-xwide-image-sender-receiver/issues>
+- 问题反馈：<https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver/issues>

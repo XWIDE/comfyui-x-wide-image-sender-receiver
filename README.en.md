@@ -30,14 +30,14 @@ The transfer protocol is identical to the original (`img-send` event, `name.png 
 **Option 1 — ComfyUI Manager (recommended)**
 
 1. Open Manager → **Install via Git URL**;
-2. Enter `https://github.com/XWIDE/comfyui-xwide-image-sender-receiver`;
+2. Enter `https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver`;
 3. Restart ComfyUI and refresh the page (`Ctrl` + `F5`).
 
 **Option 2 — manual**
 
 ```bash
 cd ComfyUI/custom_nodes
-git clone https://github.com/XWIDE/comfyui-xwide-image-sender-receiver
+git clone https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver
 ```
 
 No extra dependencies: only ComfyUI's bundled `torch` / `numpy` / `Pillow` and the front-end API are used.
@@ -105,4 +105,4 @@ Original author: <https://github.com/ltdrdata> · Original project: <https://git
 ## Links
 
 - Author page: <https://space.bilibili.com/374064919>
-- Issues: <https://github.com/XWIDE/comfyui-xwide-image-sender-receiver/issues>
+- Issues: <https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver/issues>
