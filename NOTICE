@@ -1,0 +1,41 @@
+X-WIDE Image Sender / Receiver — 版权与来源说明
+===============================================
+
+本插件是以下开源项目的修改版本（独立封装，不依赖原项目运行）：
+
+    原项目：ComfyUI-Impact-Pack
+    原作者：ltdrdata (Dr.Lt.Data)
+    原仓库：https://github.com/ltdrdata/ComfyUI-Impact-Pack
+    原作者主页：https://github.com/ltdrdata
+    原许可：GNU General Public License v3.0 (GPL-3.0)
+    涉及的节点：Image Sender / Image Receiver
+    原文件位置：modules/impact/impact_pack.py
+    官方教程：https://github.com/ltdrdata/ComfyUI-extension-tutorials/blob/Main/ComfyUI-Impact-Pack/tutorial/sender_receiver.md
+
+本版本：
+
+    名称：X-WIDE Image Sender / Receiver
+    包名：comfyui-xwide-image-sender-receiver
+    作者：X-WIDE
+    仓库：https://github.com/XWIDE/comfyui-xwide-image-sender-receiver
+    许可：GPL-3.0
+
+根据 GPL-3.0 的要求，本修改版本：
+
+  1. 继续以 GPL-3.0 授权发布，完整许可文本见同目录 LICENSE 文件；
+  2. 在此声明本版本经过了修改，修改内容详见 CHANGELOG.md；
+  3. 保留原作者的版权声明。
+
+主要修改内容（1.0.0）：
+
+  - 独立封装：自实现收发与图像解码，不再依赖 Impact Pack（节点类型名改为
+    XWIDE_ImageSender / XWIDE_ImageReceiver，收发协议仍与原版一致）；
+  - 修复：切换工作流后收到的图失效（前端预览从未真正指向 /view 地址）；
+  - 修复：勾选「保存到工作流」时把 base64 内联进工作流草稿，撑爆 localStorage
+    配额并造成画布卡顿；
+  - 修复：图片文件不存在时节点直接抛异常（现改为警告 + 64×64 占位图）；
+  - 界面：控件名 / 提示 / 节点说明中英双语，新增「信息 / About」署名页，
+    节点分类为 `X-WIDE/Image`，并补充搜索别名。
+
+原项目版权归 ltdrdata 所有。
+本修改版本的修改部分版权归 X-WIDE 所有，同样以 GPL-3.0 授权。
