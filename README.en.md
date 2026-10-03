@@ -1,4 +1,4 @@
-﻿# X-WIDE Image / Latent Sender & Receiver
+# X-WIDE Image Latent Sender / Receiver
 
 **English** | [中文](https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver/blob/main/README.md)
 

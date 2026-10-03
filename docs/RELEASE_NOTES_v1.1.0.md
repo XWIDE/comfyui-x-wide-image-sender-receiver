@@ -63,8 +63,10 @@
   `missing 1 required positional argument: 'latent'` 并**忽略整个 prompt**；现在参数都有
   默认值并接收 `**kwargs`，缺失时照常回退成空 latent / 占位图。
 - **界面**：画布 / 节点右键菜单里的入口现在带插件名与版本号
-  （`ℹ X-WIDE Image Sender/Receiver v1.1.0 · 信息 / About`），不会再和别的插件的
+  （`ℹ X-WIDE Image Latent Sender/Receiver v1.1.0 · 信息 / About`），不会再和别的插件的
   「关于 / About」混淆。
+- **命名**：插件总名统一为 **`X-WIDE Image Latent Sender / Receiver`**（中文「图片 和 潜空间收发」），
+  管理器卡片 / Registry 卡片 / 画布菜单 / About 窗口 / README 一致；四颗节点自己的名字不变。
 
 ### 兼容性
 
@@ -75,9 +77,9 @@
 
 ### 验证
 
-- 前端行为测试台 **53/53**（新增 18 条 latent 用例：配对、写控件、预览、
+- 前端行为测试台 **54/54**（新增 18 条 latent 用例：配对、写控件、预览、
   纯 `.latent` 不请求图片、两个事件互不串扰、link_id 转输入后仍接收、双语控件名、
-  About 文案、菜单项带插件名与版本）；
+  About 文案、菜单项与 About 标题带插件名与版本、About 副标题的中文名）；
 - 后端离线验证 **63/63**（新增：控件契约、`preview_method` 前 13 项与原版逐项一致、
   Sender 落盘 + `latent-send` 事件、**往返读回同一个 latent（maxdiff = 0）**、
   64 通道 latent 自动改用 Qwen-Image 出预览、8 通道等无匹配格式时仍写 `.latent.png` 占位、
@@ -112,6 +114,6 @@ a restart (warning + empty latent fallback), the receiver always returns a valid
 `LATENT` instead of a bare tensor, and the legacy scaling of `.latent` files
 without a `latent_format_version_0` marker is handled per ComfyUI convention.
 
-Verified with a 53/53 front-end behaviour suite, a 63/63 back-end suite (including
+Verified with a 54/54 front-end behaviour suite, a 63/63 back-end suite (including
 an exact latent round trip), a 52/52 end-to-end suite against a running ComfyUI,
 and `py_compile`.

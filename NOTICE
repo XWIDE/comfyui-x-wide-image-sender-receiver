@@ -1,4 +1,4 @@
-X-WIDE Image / Latent Sender & Receiver — 版权与来源说明
+X-WIDE Image Latent Sender & Receiver — 版权与来源说明
 ======================================================
 
 本插件是以下开源项目的修改版本（独立封装，不依赖原项目运行）：
@@ -14,7 +14,7 @@ X-WIDE Image / Latent Sender & Receiver — 版权与来源说明
 
 本版本：
 
-    名称：X-WIDE Image / Latent Sender & Receiver
+    名称：X-WIDE Image Latent Sender & Receiver
     包名：comfyui-x-wide-image-sender-receiver
     作者：X-WIDE
     仓库：https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver

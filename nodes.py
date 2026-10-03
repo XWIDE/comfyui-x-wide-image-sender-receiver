@@ -1,6 +1,6 @@
 """
-X-WIDE Image Sender / Receiver  +  X-WIDE Latent Sender / Receiver
-=================================================================
+X-WIDE Image Latent Sender / Receiver
+=====================================
 
 原节点 Image Sender / Image Receiver / Latent Sender / Latent Receiver 由
 **ltdrdata (Dr.Lt.Data)** 在 ComfyUI-Impact-Pack 中开发（GPL-3.0）。本包把它们
@@ -46,7 +46,7 @@ try:
 except ImportError:  # pragma: no cover - ComfyUI 一定自带 safetensors
     safetensors = None
 
-LOG_PREFIX = "[X-WIDE Image/Latent Sender/Receiver]"
+LOG_PREFIX = "[X-WIDE Image Latent Sender/Receiver]"
 
 # 接收端在拿不到图像时回退用的空图尺寸（与原版一致，避免下游节点因尺寸突变报错）
 EMPTY_SIZE = 64

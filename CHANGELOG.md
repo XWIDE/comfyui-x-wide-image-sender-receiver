@@ -49,8 +49,11 @@
 
 ### 界面
 
-- 画布右键菜单里的 About 项现在带插件名与版本号（`ℹ X-WIDE Image Sender/Receiver v1.1.0 · 信息 / About`），
+- 画布右键菜单里的 About 项现在带插件名与版本号（`ℹ X-WIDE Image Latent Sender/Receiver v1.1.0 · 信息 / About`），
   不会再和别的插件的「关于 / About」混在一起认不出来。
+- 插件总名统一为 **`X-WIDE Image Latent Sender / Receiver`**（中文「图片 和 潜空间收发」）：
+  管理器卡片、Comfy Registry 名称、画布右键菜单、About 窗口标题、README 与 NOTICE 全部一致；
+  四颗节点各自的名字（`X-WIDE Image Sender 图像发送器` 等）保持不变。
 
 ### 兼容性
 

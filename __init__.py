@@ -1,6 +1,6 @@
 """
-X-WIDE Image Sender / Receiver + Latent Sender / Receiver
-=========================================================
+X-WIDE Image Latent Sender / Receiver
+=====================================
 
 原节点 Image Sender / Image Receiver / Latent Sender / Latent Receiver 由 ltdrdata
 (Dr.Lt.Data) 在 ComfyUI-Impact-Pack 中开发（GPL-3.0）。本包是**独立**的中英双语版本，

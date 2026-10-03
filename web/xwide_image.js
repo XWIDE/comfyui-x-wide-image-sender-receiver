@@ -1,5 +1,5 @@
 /**
- * X-WIDE Image Sender / Receiver + X-WIDE Latent Sender / Receiver —— 前端扩展
+ * X-WIDE Image Latent Sender / Receiver —— 前端扩展
  * =========================================================================
  *
  * 原节点 Image Sender / Image Receiver / Latent Sender / Latent Receiver 由
@@ -34,7 +34,7 @@ import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
 
 const EXTENSION_NAME = "xwide.image_sender_receiver";
-const LOG_PREFIX = "[X-WIDE Image/Latent Sender/Receiver]";
+const LOG_PREFIX = "[X-WIDE Image Latent Sender/Receiver]";
 const VERSION = "1.1.0";
 
 const SENDER_CLASS = "XWIDE_ImageSender";
@@ -471,7 +471,9 @@ function installInfoStyle() {
 .xwide-info-backdrop{position:fixed;inset:0;z-index:12000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);}
 .xwide-info-box{width:min(760px,92vw);max-height:86vh;display:flex;flex-direction:column;background:#23222a;color:#e8e8ea;border:1px solid #4a4a55;border-radius:12px;box-shadow:0 18px 48px rgba(0,0,0,.55);font-family:system-ui,"Segoe UI","Microsoft YaHei",sans-serif;font-size:15px;}
 .xwide-info-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid #3a3a44;}
+.xwide-info-headtext{display:flex;flex-direction:column;gap:3px;}
 .xwide-info-title{font-size:17px;font-weight:600;color:#f0c674;}
+.xwide-info-sub{font-size:13px;color:#9aa0ab;}
 .xwide-info-body{padding:16px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;line-height:1.65;}
 .xwide-info-foot{display:flex;justify-content:flex-end;padding:12px 18px;border-top:1px solid #3a3a44;}
 .xwide-close{background:#3a3a46;color:#eee;border:1px solid #55555f;border-radius:8px;padding:6px 20px;cursor:pointer;font-size:15px;}
@@ -634,7 +636,10 @@ function showAboutDialog() {
   backdrop.innerHTML = `
     <div class="xwide-info-box" role="dialog" aria-modal="true">
       <div class="xwide-info-head">
-        <div class="xwide-info-title">X-WIDE Image / Latent Sender / Receiver &nbsp;v${VERSION}</div>
+        <div class="xwide-info-headtext">
+          <div class="xwide-info-title">X-WIDE Image Latent Sender / Receiver &nbsp;v${VERSION}</div>
+          <div class="xwide-info-sub">${tr("图片 和 潜空间收发", "Images and latents — send / receive")}</div>
+        </div>
         <button class="xwide-close" type="button">${tr("关闭 / Close", "Close / 关闭")}</button>
       </div>
       <div class="xwide-info-body">${buildAboutBody()}</div>
@@ -661,7 +666,7 @@ function appendAboutItems(options) {
   if (!Array.isArray(options)) return options;
   try {
     options.push(
-      { content: `ℹ X-WIDE Image Sender/Receiver v${VERSION} · 信息 / About`, callback: () => showAboutDialog() },
+      { content: `ℹ X-WIDE Image Latent Sender/Receiver v${VERSION} · 信息 / About`, callback: () => showAboutDialog() },
       {
         content: "ℹ 打开作者主页 / Author Page",
         callback: () => window.open(AUTHOR_PAGE_URL, "_blank", "noopener,noreferrer"),
