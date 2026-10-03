@@ -91,12 +91,13 @@ Same usage as the image pair, but the `LATENT` itself travels:
 | X-WIDE Latent Sender | `samples` | The latent to send |
 | | `filename_prefix` | Filename prefix used in the temp folder (default `latents/LatentSender`) |
 | | `link_id` | Pairing id |
-| | `preview_method` | How the preview image is decoded (Latent2RGB-SDXL / SD15 / FLUX.1 …, item-for-item identical to the original; it affects only the preview) |
+| | `preview_method` | How the preview image is decoded (Latent2RGB-SDXL / SD15 / FLUX.1 … — the first 13 entries are item-for-item identical to the original, plus Qwen-Image / HunyuanImage / Flux.2 / Wan2.1 / Wan2.2 / MingImage; it affects only the preview) |
 | X-WIDE Latent Receiver | `latent` | Filled automatically with the received temp filename; you can also pick a `.latent` / `.latent.png` from the input folder |
 | | `link_id` | Pairing id |
 | | `trigger_always` | Always re-execute this node (ignore the cache) |
 
 - The sender writes `<prefix>_<counter>_.latent.png`: a Latent2RGB preview with the latent packed into its EXIF (exactly like the original), which the receiver reads back unchanged.
+- The preview format is **matched automatically to the latent's channel count**: when the selected format and the latent do not fit (typically a 64-channel Qwen-Image latent with the 4-channel SDXL default) it switches to a suitable format and says so in the log, so new models such as Qwen-Image and HunyuanImage get a preview as well. If nothing fits, the thumbnail is a placeholder but the file is still a `.latent.png` and the latent is transferred normally.
 - These files also live in `ComfyUI/temp` and **are cleared on restart**, so send again afterwards; the Receiver does not turn red in that case — it outputs an empty latent and logs a warning.
 - The preview needs `piexif` and serialisation needs `safetensors` (both usually present in a ComfyUI install). Without `piexif` the sender falls back to a plain `.latent` file: transfer still works, the receiver just has no thumbnail.
 

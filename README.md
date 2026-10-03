@@ -91,12 +91,13 @@ git clone https://github.com/XWIDE/comfyui-x-wide-image-sender-receiver
 | X-WIDE Latent Sender | `samples` | 要发送的 latent |
 | | `filename_prefix` | 存到临时目录时用的文件名前缀（默认 `latents/LatentSender`） |
 | | `link_id` | 配对编号 |
-| | `preview_method` | 预览图的解码方式（Latent2RGB-SDXL / SD15 / FLUX.1 …，与原版逐项一致；只影响预览图，不影响传递的 latent） |
+| | `preview_method` | 预览图的解码方式（Latent2RGB-SDXL / SD15 / FLUX.1 … 前 13 项与原版逐项一致，另追加 Qwen-Image / HunyuanImage / Flux.2 / Wan2.1 / Wan2.2 / MingImage；只影响预览图，不影响传递的 latent） |
 | X-WIDE Latent Receiver | `latent` | 收到后自动填入临时文件名，也可手动选择输入目录里的 `.latent` / `.latent.png` |
 | | `link_id` | 配对编号 |
 | | `trigger_always` | 开启后本节点每次都重新执行（忽略缓存） |
 
 - Sender 写出的文件是 `<前缀>_<序号>_.latent.png`：一张 Latent2RGB 预览图，latent 本体打包在它的 EXIF 里（与原版一致），接收端可原样读回。
+- 预览格式会**按 latent 的通道数自动匹配**：选中的格式和 latent 对不上时（典型是 64 通道的千问 Qwen-Image latent 配了下拉里 4 通道的 SDXL）会自动换成合适的格式并在日志里写明，所以千问 / 混元等新模型也能出预览图；实在没有匹配格式时缩略图是占位图，但文件仍是 `.latent.png`、latent 照常传递。
 - 同样存放在 `ComfyUI/temp`，**重启后会被清空**，需要重新发送一次；此时 Receiver 不会报红，只会输出一个空 latent 并打一条警告。
 - 预览图依赖 `piexif`、latent 序列化依赖 `safetensors`（ComfyUI 环境里通常都已存在）。若 `piexif` 缺失，Sender 会退化成写纯 `.latent` 文件：收发照常，只是接收节点上没有缩略图。
 

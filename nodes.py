@@ -77,6 +77,14 @@ LATENT_PREVIEW_METHODS = [
     "TAESDXL",
     "TAESD15",
     "TAESD3",
+    # ↓ 本包新增，只能追加在末尾：上面 13 项与原版逐字相同，老工作流里存的就是这些字符串，
+    #    删项或改名会让老工作流校验失败。
+    "Latent2RGB-Qwen-Image",
+    "Latent2RGB-HunyuanImage",
+    "Latent2RGB-Flux.2",
+    "Latent2RGB-Wan2.1",
+    "Latent2RGB-Wan2.2",
+    "Latent2RGB-MingImage",
 ]
 
 # preview_method → comfy.latent_formats 里的类名（原版 prepare_preview 的等价映射）
@@ -90,7 +98,36 @@ LATENT_FORMAT_BY_PREVIEW_METHOD = {
     "Latent2RGB-SC-B": "SC_B",
     "Latent2RGB-FLUX.1": "Flux",
     "Latent2RGB-LTXV": "LTXV",
+    # 本包新增（上面的映射与原版一致，未改动）
+    "Latent2RGB-Qwen-Image": "QwenImage21",
+    "Latent2RGB-HunyuanImage": "HunyuanImage21",
+    "Latent2RGB-Flux.2": "Flux2",
+    "Latent2RGB-Wan2.1": "Wan21",
+    "Latent2RGB-Wan2.2": "Wan22",
+    "Latent2RGB-MingImage": "MingImage",
 }
+
+# 选中的预览方式和 latent 的通道数对不上时，按这个优先级自动换一个能出预览的格式。
+# 典型场景：Qwen-Image 的 latent 是 64 通道，而下拉默认是 4 通道的 SDXL，
+# 硬套 SDXL 系数会直接报 "mat1 and mat2 shapes cannot be multiplied"、预览失败。
+AUTO_LATENT_FORMAT_PREFERENCE = [
+    "QwenImage21",
+    "HunyuanImage21",
+    "MingImage",
+    "SD3",
+    "Flux",
+    "Wan21",
+    "Wan22",
+    "HunyuanVideo15",
+    "HunyuanVideo",
+    "LTXV",
+    "SDXL",
+    "SD15",
+    "SD_X4",
+    "SC_B",
+    "SC_Prior",
+    "SDXL_Playground_2_5",
+]
 
 
 def empty_image(size=EMPTY_SIZE):
@@ -240,7 +277,20 @@ class XWIDE_ImageReceiver:
         return load_image_from_path(image)
 
     @classmethod
-    def VALIDATE_INPUTS(cls, image, link_id, save_to_workflow, image_data, trigger_always):
+    def VALIDATE_INPUTS(
+        cls,
+        image=None,
+        link_id=0,
+        save_to_workflow=False,
+        image_data=None,
+        trigger_always=False,
+        **kwargs,
+    ):
+        # 参数一律给默认值 + 收 **kwargs：控件被转成输入（或没连线）时 ComfyUI 传不齐参数，
+        # 硬写成必填会直接报 "missing 1 required positional argument"。
+        if image is None or image == "":
+            return True
+
         # '#DATA' 是 Impact Pack 原版在"保存到工作流"模式下写进提示里的占位符，
         # 迁移过来的工作流仍然带它，这里要放行。
         if image == "#DATA":
@@ -260,7 +310,15 @@ class XWIDE_ImageReceiver:
         return True
 
     @classmethod
-    def IS_CHANGED(cls, image, link_id, save_to_workflow, image_data, trigger_always):
+    def IS_CHANGED(
+        cls,
+        image=None,
+        link_id=0,
+        save_to_workflow=False,
+        image_data=None,
+        trigger_always=False,
+        **kwargs,
+    ):
         if trigger_always:
             return float("NaN")
 
@@ -439,9 +497,75 @@ def load_latent_file(value):
     return empty_latent()
 
 
-def latent_format_for(preview_method):
-    """preview_method 字符串 → comfy.latent_formats 的实例（未知取值退回 SD15，与原版一致）。"""
+def latent_channels_of(latent_tensor):
+    """latent 的通道数（拿不到就返回 None）。"""
+    try:
+        shape = getattr(latent_tensor, "shape", None)
+        return int(shape[1]) if shape is not None and len(shape) > 1 else None
+    except Exception:  # noqa: BLE001 - 判断不了就当作未知
+        return None
+
+
+def latent_format_fits(latent_format, channels):
+    """
+    这个格式能不能给指定通道数的 latent 出 Latent2RGB 预览。
+
+    判据和 ComfyUI 自己的一样：latent_rgb_factors 的行数就是通道数
+    （Flux2 那种带 reshape 的按 reshape 首维判断）。
+    """
+    if channels is None:
+        return True
+
+    factors = getattr(latent_format, "latent_rgb_factors", None)
+    if not factors:
+        return False
+    if len(factors) == channels:
+        return True
+
+    reshape = getattr(latent_format, "latent_rgb_factors_reshape", None)
+    if callable(reshape):
+        # 例如 Flux2：128 通道先按 2x2 打包成 32 行再乘系数（系数行数 * 4 = 通道数）。
+        return len(factors) * 4 == channels
+    return False
+
+
+def matching_latent_format(channels):
+    """按通道数找一个能出预览的格式，返回 (类名, 实例) 或 None。"""
+    if channels is None:
+        return None
+
+    import comfy.latent_formats as latent_formats
+
+    candidates = {}
+    for name, factory in vars(latent_formats).items():
+        if not isinstance(factory, type):
+            continue
+        try:
+            instance = factory()
+        except Exception:  # noqa: BLE001 - 少数格式类构造需要额外参数
+            continue
+        if latent_format_fits(instance, channels):
+            candidates[name] = instance
+
+    for name in AUTO_LATENT_FORMAT_PREFERENCE:
+        if name in candidates:
+            return name, candidates[name]
+    if candidates:
+        name = sorted(candidates)[0]
+        return name, candidates[name]
+    return None
+
+
+def latent_format_for(preview_method, latent_tensor=None):
+    """
+    preview_method 字符串 → comfy.latent_formats 的实例（未知取值退回 SD15，与原版一致）。
+
+    本包新增：选中的格式和 latent 的通道数不匹配时（例如 64 通道的 Qwen-Image latent
+    配了下拉默认的 SDXL），自动换一个能出预览的格式，并在日志里说明换成了哪个。
+    """
     import comfy.latent_formats as latent_formats  # 惰性导入：不拖慢 ComfyUI 启动
+
+    channels = latent_channels_of(latent_tensor)
 
     class_name = LATENT_FORMAT_BY_PREVIEW_METHOD.get(preview_method)
     factory = getattr(latent_formats, class_name, None) if class_name else None
@@ -452,6 +576,30 @@ def latent_format_for(preview_method):
             preview_method,
         )
         factory = latent_formats.SD15
+
+    instance = factory()
+    if latent_format_fits(instance, channels):
+        return instance
+
+    matched = matching_latent_format(channels)
+    if matched is not None:
+        name, instance = matched
+        logging.info(
+            "%s LatentSender - preview method '%s' does not fit a %s-channel latent, "
+            "using '%s' for the preview instead",
+            LOG_PREFIX,
+            preview_method,
+            channels,
+            name,
+        )
+        return instance
+
+    logging.warning(
+        "%s LatentSender - no latent format with preview factors for %s channels, "
+        "the thumbnail will be a placeholder",
+        LOG_PREFIX,
+        channels,
+    )
     return factory()
 
 
@@ -465,7 +613,7 @@ def render_latent_preview(latent_tensor, preview_method):
     try:
         from latent_preview import Latent2RGBPreviewer  # ComfyUI 自带的模块
 
-        latent_format = latent_format_for(preview_method)
+        latent_format = latent_format_for(preview_method, latent_tensor)
         try:
             previewer = Latent2RGBPreviewer(
                 latent_format.latent_rgb_factors,
@@ -496,49 +644,69 @@ def render_latent_preview(latent_tensor, preview_method):
         return None
 
 
+def placeholder_preview(latent_tensor):
+    """
+    预览渲染失败时的占位缩略图。
+
+    为什么要有它：以前只要预览渲染失败（例如格式和 latent 通道数对不上）就整个降级成
+    `<名字>_<序号>_.latent` 纯文件，接收端连缩略图框都不出现、看起来像"没收到"。
+    现在仍然写 `.latent.png`，只是缩略图是空的 —— 文件格式没变、EXIF 里的 latent 也一个字节不少。
+    """
+    size = PREVIEW_LOWER_BOUND
+    tile = Image.new("RGB", (size, size), (32, 32, 32))
+    return tile
+
+
 def save_latent_file(latent_tensor, full_output_folder, filename, counter, preview_method, prompt, extra_pnginfo):
     """
     写出文件，返回文件名。
 
     正常情况写 `<名字>_<序号>_.latent.png`：预览图 + EXIF 里内嵌的 latent，
     与原版完全一致（接收端也就能从 EXIF 里读回来）。
-    没有 piexif（无法写 EXIF）时退化成 `<名字>_<序号>_.latent` 纯文件，收发依旧可用，
-    只是接收节点上没有缩略图。
+    预览渲染不出来时用占位缩略图，文件格式与内嵌的 latent 都不变。
+    只有没有 piexif（写不了 EXIF）时才退化成 `<名字>_<序号>_.latent` 纯文件。
     """
     base = f"{filename}_{counter:05}_"
-    preview = render_latent_preview(latent_tensor, preview_method) if piexif is not None else None
-
-    if preview is not None and safetensors is not None:
-        file = base + ".latent.png"
-
-        compressed = BytesIO()
-        with zipfile.ZipFile(compressed, mode="w") as archive:
-            archive.writestr("latent", safetensors.torch.save({"latent_tensor": latent_tensor}))
-
-        metadata = PngImagePlugin.PngInfo()
-        if prompt is not None:
-            metadata.add_text("prompt", json.dumps(prompt))
-        if extra_pnginfo is not None:
-            for key in extra_pnginfo:
-                metadata.add_text(key, json.dumps(extra_pnginfo[key]))
-
-        preview.save(
-            os.path.join(full_output_folder, file),
-            format="png",
-            exif=piexif.dump({"Exif": {piexif.ExifIFD.UserComment: compressed.getvalue()}}),
-            pnginfo=metadata,
-            optimize=True,
-        )
-        return file
 
     if safetensors is None:
         raise RuntimeError("safetensors is not available, cannot save the latent")
 
-    file = base + ".latent"
-    # 带上 ComfyUI 的版本标记：值已经是现代缩放，读端不要再去乘 1/0.18215。
-    safetensors.torch.save_file(
-        {"latent_tensor": latent_tensor, "latent_format_version_0": torch.tensor([])},
+    # 没有 piexif 就塞不进 EXIF，只能写纯 .latent（收发照旧，只是接收端没有缩略图）。
+    if piexif is None:
+        file = base + ".latent"
+        # 带上 ComfyUI 的版本标记：值已经是现代缩放，读端不要再去乘 1/0.18215。
+        safetensors.torch.save_file(
+            {"latent_tensor": latent_tensor, "latent_format_version_0": torch.tensor([])},
+            os.path.join(full_output_folder, file),
+        )
+        return file
+
+    preview = render_latent_preview(latent_tensor, preview_method)
+    if preview is None:
+        logging.warning(
+            "%s LatentSender - using a placeholder thumbnail for '%s'", LOG_PREFIX, base
+        )
+        preview = placeholder_preview(latent_tensor)
+
+    file = base + ".latent.png"
+
+    compressed = BytesIO()
+    with zipfile.ZipFile(compressed, mode="w") as archive:
+        archive.writestr("latent", safetensors.torch.save({"latent_tensor": latent_tensor}))
+
+    metadata = PngImagePlugin.PngInfo()
+    if prompt is not None:
+        metadata.add_text("prompt", json.dumps(prompt))
+    if extra_pnginfo is not None:
+        for key in extra_pnginfo:
+            metadata.add_text(key, json.dumps(extra_pnginfo[key]))
+
+    preview.save(
         os.path.join(full_output_folder, file),
+        format="png",
+        exif=piexif.dump({"Exif": {piexif.ExifIFD.UserComment: compressed.getvalue()}}),
+        pnginfo=metadata,
+        optimize=True,
     )
     return file
 
@@ -625,7 +793,9 @@ class XWIDE_LatentReceiver:
         }
 
     @classmethod
-    def IS_CHANGED(cls, latent, link_id, trigger_always):
+    def IS_CHANGED(cls, latent=None, link_id=0, trigger_always=False, **kwargs):
+        # 参数一律给默认值 + 收 **kwargs：控件被转成输入（或没连线）时 ComfyUI 传不齐参数，
+        # 硬写成必填会直接报 "missing 1 required positional argument"。
         if trigger_always:
             return float("NaN")
 
@@ -641,7 +811,11 @@ class XWIDE_LatentReceiver:
         return hash(latent)
 
     @classmethod
-    def VALIDATE_INPUTS(cls, latent, link_id, trigger_always):
+    def VALIDATE_INPUTS(cls, latent=None, link_id=0, trigger_always=False, **kwargs):
+        # 还没来得及连线 / 值是空的都放行，由 doit 回退成空 latent，不要在排队阶段把节点标红。
+        if latent is None or latent == "":
+            return True
+
         if not isinstance(latent, str) or latent.startswith("/") or ".." in latent:
             return "Invalid latent file: {}".format(latent)
 

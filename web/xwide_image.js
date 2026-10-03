@@ -570,6 +570,14 @@ function buildAboutBody() {
       "UI: bilingual widget labels and tooltips, an X-WIDE category, and search aliases such as xwide / sender / receiver / latent sender / latent receiver."
     )}</li>
     <li>${tr(
+      "预览：Latent 预览格式和 latent 通道数对不上时（例如 64 通道的千问 Qwen-Image 配到默认的 SDXL）会自动换用匹配的格式，不再报错、也不再丢掉缩略图；下拉里另加了 Qwen-Image / HunyuanImage / Flux.2 / Wan2.1 / Wan2.2 / MingImage 等新格式。",
+      "Preview: when the selected latent preview format does not match the latent's channel count (e.g. a 64-channel Qwen-Image latent with the default SDXL) a matching format is chosen automatically — no more error and no lost thumbnail. New formats such as Qwen-Image / HunyuanImage / Flux.2 / Wan2.1 / Wan2.2 / MingImage were added to the list."
+    )}</li>
+    <li>${tr(
+      "修复：接收节点的输入控件被转成输入（或还没连线）时，不再报 “missing 1 required positional argument”，只是回退成空 latent / 占位图。",
+      "Fix: when a receiver's input widget is converted to an input (or not connected yet) it no longer raises “missing 1 required positional argument” — it just falls back to an empty latent / placeholder image."
+    )}</li>
+    <li>${tr(
       "兼容：沿用原版的 img-send 与 latent-send 协议，可与 Impact Pack 的收发节点互相配对。",
       "Compatible: reuses the original img-send and latent-send protocols, so it can pair with Impact Pack's sender/receiver nodes."
     )}</li>
@@ -626,7 +634,7 @@ function showAboutDialog() {
   backdrop.innerHTML = `
     <div class="xwide-info-box" role="dialog" aria-modal="true">
       <div class="xwide-info-head">
-        <div class="xwide-info-title">X-WIDE Image Sender / Receiver &nbsp;v${VERSION}</div>
+        <div class="xwide-info-title">X-WIDE Image / Latent Sender / Receiver &nbsp;v${VERSION}</div>
         <button class="xwide-close" type="button">${tr("关闭 / Close", "Close / 关闭")}</button>
       </div>
       <div class="xwide-info-body">${buildAboutBody()}</div>
@@ -653,7 +661,7 @@ function appendAboutItems(options) {
   if (!Array.isArray(options)) return options;
   try {
     options.push(
-      { content: "ℹ 信息 / About", callback: () => showAboutDialog() },
+      { content: `ℹ X-WIDE Image Sender/Receiver v${VERSION} · 信息 / About`, callback: () => showAboutDialog() },
       {
         content: "ℹ 打开作者主页 / Author Page",
         callback: () => window.open(AUTHOR_PAGE_URL, "_blank", "noopener,noreferrer"),

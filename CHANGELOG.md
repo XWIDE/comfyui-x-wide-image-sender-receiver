@@ -15,9 +15,15 @@
   - 正常写 `<前缀>_<序号>_.latent.png`：Latent2RGB 预览图 + 把 latent 打包塞进 PNG 的
     EXIF `UserComment`（zip + safetensors），接收端可原样读回。预览图不再贴 Impact Pack 自带的
     「latent」贴纸（那是原项目的图片资源，本包不打包它）。
-  - `preview_method` 选项与原版逐项一致：Latent2RGB-FLUX.1 / SDXL / SD15 / SD3 / SD-X4 /
-    Playground-2.5 / SC-Prior / SC-B / LTXV / TAEF1 / TAESDXL / TAESD15 / TAESD3；
-    未知取值退回 SD15 并告警。
+  - `preview_method` 前 13 项与原版逐项一致（Latent2RGB-FLUX.1 / SDXL / SD15 / SD3 / SD-X4 /
+    Playground-2.5 / SC-Prior / SC-B / LTXV / TAEF1 / TAESDXL / TAESD15 / TAESD3），
+    未知取值退回 SD15 并告警；本版在其后追加了 `Latent2RGB-Qwen-Image`、
+    `Latent2RGB-HunyuanImage`、`Latent2RGB-Flux.2`、`Latent2RGB-Wan2.1`、`Latent2RGB-Wan2.2`、
+    `Latent2RGB-MingImage`（只追加，不改动前 13 项，老工作流里的取值仍然有效）。
+  - **预览格式按通道数自动匹配**：选中的格式和 latent 的通道数对不上时（典型是 64 通道的
+    千问 Qwen-Image latent 配了下拉默认的 4 通道 SDXL，硬套会报
+    `mat1 and mat2 shapes cannot be multiplied (…x64 and 4x3)`），自动换一个能出预览的格式
+    并在日志里写明用了哪个，预览图不再失败。
 - **X-WIDE Latent Receiver**（`XWIDE_LatentReceiver`，输出 `LATENT`）
   - 控件：`latent`（自动列出输入目录里的 `.latent` / `.latent.png`）/ `link_id` / `trigger_always`。
   - `doit` 返回 `{"ui": {"images": [...]}, "result": (latent,)}`，与原版一致。
@@ -33,6 +39,18 @@
   `{"samples": …}`，下游会收到错误类型；本包统一返回合法的 `LATENT`。
 - 读 `.latent` 时按 ComfyUI 的约定处理缩放：没有 `latent_format_version_0` 标记的老文件
   乘 `1/0.18215`，本包自己写出的文件一定带标记，避免被重复缩放。
+- **预览渲染失败不再降级成纯 `.latent`**：以前只要预览画不出来（例如格式和通道数对不上），
+  整个文件就会退化成 `<前缀>_<序号>_.latent`，接收节点上连缩略图框都不出现，看起来像「没收到」。
+  现在照样写 `.latent.png`（缩略图是占位图），文件格式与 EXIF 里内嵌的 latent 都不变。
+- **接收节点的输入控件被转成输入 / 没连线时不再报错**：`VALIDATE_INPUTS` / `IS_CHANGED`
+  原来把 `latent`（图像版是 `image`）写成必填参数，ComfyUI 少传一个就报
+  `missing 1 required positional argument` 并且整个 prompt 被忽略。现在参数都有默认值并接收
+  `**kwargs`，缺失时照常回退成空 latent / 占位图。
+
+### 界面
+
+- 画布右键菜单里的 About 项现在带插件名与版本号（`ℹ X-WIDE Image Sender/Receiver v1.1.0 · 信息 / About`），
+  不会再和别的插件的「关于 / About」混在一起认不出来。
 
 ### 兼容性
 
