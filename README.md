@@ -50,6 +50,9 @@ git clone https://github.com/XWIDE/comfyui-xwide-image-sender-receiver
 2. 添加一个 **X-WIDE Image Receiver**，把它的 `image` 输出接到下游节点；
 3. 让两个节点的 **`link_id` 相同**（默认都是 `0`），Sender 执行后图片就会出现在 Receiver 上。
 
+> `link_id` 也可以右键「转换成输入」，用 `Primitive` / `ImpactInt` 连线来驱动（和原版一样）：
+> 转换后视为「已连接」，Receiver 会直接接收图片。
+
 | 节点 | 控件 | 说明 |
 | --- | --- | --- |
 | X-WIDE Image Sender | `images` | 要发送的图像 |

@@ -84,6 +84,23 @@ function findWidget(node, name) {
   return (node?.widgets || []).find((widget) => widget?.name === name) || null;
 }
 
+/**
+ * 判断某个接收节点的 link_id 是否匹配事件里的 link_id。
+ *
+ * 和原版 Impact 保持一致：link_id 可以被转成输入、由 Primitive / ImpactInt 连线驱动，
+ * 这种情况下前端会把它从 widgets 里摘掉（或标成 converted-widget），数值已经不由控件决定，
+ * 此时一律视为「已连接」直接接收，否则用户一转换就再也收不到图。
+ */
+function receiverLinkMatches(node, linkId) {
+  const widget = findWidget(node, "link_id");
+  if (!widget || widget.type === "converted-widget") return true;
+
+  const input = (node?.inputs || []).find((slot) => slot?.name === "link_id");
+  if (input && input.link != null) return true; // 控件还在，但已被输入接管
+
+  return String(widget.value ?? "") === String(linkId ?? "");
+}
+
 function viewUrl(params) {
   // api.apiURL 在不同部署下会带上 /api 前缀，所以能用就用它。
   const base = typeof api?.apiURL === "function" ? api.apiURL("/view") : "/view";
@@ -329,8 +346,7 @@ function imgSendHandler(event) {
   for (const node of nodes) {
     if (node?.type !== RECEIVER_CLASS) continue;
 
-    const linkWidget = findWidget(node, "link_id");
-    if (String(linkWidget?.value ?? "") !== String(detail.link_id ?? "")) continue;
+    if (!receiverLinkMatches(node, detail.link_id)) continue;
 
     const pathWidget = findWidget(node, "image");
     if (!pathWidget) continue;

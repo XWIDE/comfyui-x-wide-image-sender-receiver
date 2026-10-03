@@ -50,6 +50,9 @@ No extra dependencies: only ComfyUI's bundled `torch` / `numpy` / `Pillow` and t
 2. Add an **X-WIDE Image Receiver** and wire its `image` output downstream;
 3. Give both nodes the **same `link_id`** (both default to `0`).
 
+> `link_id` can also be converted to an input and driven by a `Primitive` / `ImpactInt` node
+> (same as the original). Once converted it counts as "linked" and the Receiver accepts the image.
+
 | Node | Widget | Description |
 | --- | --- | --- |
 | X-WIDE Image Sender | `images` | Image(s) to send |

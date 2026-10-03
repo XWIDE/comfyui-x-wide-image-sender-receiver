@@ -41,5 +41,7 @@
 ### 兼容性
 
 - 与原版 Impact Pack 的收发节点可共存、可互相配对（协议一致）。
+- `link_id` 支持转成输入（用 `Primitive` / `ImpactInt` 连线驱动）：与原版一致，
+  此时视为「已连接」直接接收图片，不再按控件数值过滤。
 - 节点类型名改为 `XWIDE_ImageSender` / `XWIDE_ImageReceiver`，可与原节点同画布共存。
 - `VALIDATE_INPUTS` 放行原版写进提示的 `#DATA` 占位符，并继续拒绝绝对路径与 `..`。
